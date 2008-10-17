@@ -1,0 +1,13 @@
+Nagisk is a simple Perl script to monitor Astrisk server from Nagios.
+
+Installation and configuration
+------------------------------
+
+Report to this post:
+http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk.html
+
+
+License
+-------
+
+Distributed under the GPLv3 license.
