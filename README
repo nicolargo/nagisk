@@ -3,9 +3,18 @@ Nagisk is a simple Perl script to monitor Astrisk server from Nagios.
 Installation and configuration
 ------------------------------
 
-Report to this post:
+Follow this link:
 http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk.html
 
+Version tracking
+----------------
+
+v1.1: Add the following options:
+		-c zaptel: Display the status of the zaptel card
+		-c span: Display the status of a specific span (set with -s option)
+		-s <span number>: Set the span number (default is 1)
+	
+v1.0: first public release
 
 License
 -------
