@@ -1,4 +1,4 @@
-Nagisk is a simple Perl script to monitor Astrisk server from Nagios.
+Nagisk is a simple Perl script to monitor an Asterisk PBX server from Nagios.
 
 Installation and configuration
 ------------------------------
@@ -8,6 +8,37 @@ http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk
 
 Version tracking
 ----------------
+v1.2.3: 11/2011 by ManuxFR :
+		-c registry : Display the status of the SIP trunk - "sip show registry"
+		Compatible with Asterisk 1.8.4.2
+		
+v1.2.2: 03/2011 by Frederic:
+		-c konference: Displays the number of active conferences. Tresholds are against the number
+		of active conferences. This is for the Konference module, not for the Meetme module. Will show:
+		"Active conferences: 5"
+		-c jabber -b <buddy>: Displays the status of a particular jabber buddy. Will show:
+		"Buddy: freddy (Connected)"
+		"Connected" will return OK
+		"Connecting" will return WARNING
+		"Disconnected" will return CRITICAL
+
+v1.2.1: 03/2011 by Frederic:
+		+ Implemented warning and critical treshold parameters.
+          Treshold syntax follows the "Nagios plug-in development guidelines" document (section 2.5).
+		"-c peers" tresholds are checked against the number of Online and Monitored peers
+		"-c peer -p <name>" tresholds are checked against the peer latency (ms)
+		"-c channels" tresholds are checked against the total number of channels
+		-w <treshold>: Specifies the Warning treshold (default value = 1000)
+		-x <treshold>: Specifies the Critical treshold (default value = 2000)
+
+v1.2: 03/2011 by Frederic:
+        + Now compatible with Asterisk 1.6.2.X
+        -c peer -p <name>: Display the "status" of "sip show peer <peer>": 
+		"myowntelco:  OK (65 ms)"
+        + "-c channels" is now using "core show channels" with new output parsing:
+		"26 active channels 12 active calls 317 calls processed"
+        + Replaced "show version" by "core show version" which will parse and show:
+		"Asterisk 1.6.2.13"
 
 v1.1: Add the following options:
 		-c zaptel: Display the status of the zaptel card
