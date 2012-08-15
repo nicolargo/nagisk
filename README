@@ -8,6 +8,20 @@ http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk
 
 Version tracking
 ----------------
+v1.2.4: 08/2012 by manuel@linux-home.at :
+		-c pri_spans: Display all dahdi spans
+		
+		-c dahdi_span: Display the status of the specific dahdi span
+		-s <span number>: Set the span number (default is 1)
+		"OK" will return OK
+		"RED" will return CRITICAL
+		
+		-c pri_spans: Display all pri spans
+		
+		-c pri_span: Display the status of the specific span
+		-s <span number>: Set the span number (default is 1)
+		"OK" will return OK all else CRITICAL
+		
 v1.2.3: 11/2011 by ManuxFR :
 		-c registry : Display the status of the SIP trunk - "sip show registry"
 		Compatible with Asterisk 1.8.4.2
