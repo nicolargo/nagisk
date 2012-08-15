@@ -7,6 +7,7 @@
 # Modified by :
 # Frederic (03/2011)
 # ManuxFR (11/2011)
+# manuel@linux-home.at (8/2012)[dahdi,pri checks added]
 #------------------------------------------------------------------------------
 use Getopt::Std;
 use strict;
@@ -26,6 +27,10 @@ my $asterisk_command_jabber     = "jabber show connected";
 my $asterisk_command_channels   = "core show channels";
 my $asterisk_command_zaptel     = "zap show status";
 my $asterisk_command_span       = "zap show status";
+my $asterisk_command_dahdi      = "dahdi show status";
+my $asterisk_command_dahdi_span = "dahdi show status";
+my $asterisk_command_pri_spans  = "pri show spans";
+my $asterisk_command_pri_span   = "pri show span";
 my $asterisk_span_number        = 1;
 my $asterisk_peer_name          = "myowntelco";
 my $asterisk_buddy_name         = "asterisk";
@@ -88,6 +93,10 @@ sub printsyntax() {
 		  . "-c jabber: Display a jabber buddy status\n"
 		  . "-c zaptel: Display the status of the zaptel card\n"
 		  . "-c span: Display the status of a specific span (set with -s option)\n"
+		  . "-c dahdi: Display the status of the dahdi card\n"
+		  . "-c dahdi_span: Display the status from a span from the dahdi card\n"
+		  . "-c pri_spans: Display the status of the pri spans\n"
+		  . "-c pri_span: Display the status of a specific pri span (set with -s option)\n"
 		  . "-c registry: Display the Hosts and the Registry\n"
 		  . "-s <span number>: Set the span number (default is 1)\n"
 		  . "-p <peer name>\n"
@@ -216,10 +225,19 @@ for my $option (keys %opts) {
 			$asterisk_command = $asterisk_command_konference;
 		} elsif ($value eq "zaptel") {
 			$asterisk_command = $asterisk_command_zaptel;
-		} elsif ($value eq "registry") {
-			$asterisk_command = $asterisk_command_registry;
 		} elsif ($value eq "span") {
 			$asterisk_command = $asterisk_command_span;
+		} elsif ($value eq "dahdi") {
+			$asterisk_command = $asterisk_command_dahdi;
+		} elsif ($value eq "dahdi_span") {
+			$asterisk_command = $asterisk_command_dahdi_span;
+		} elsif ($value eq "pri_spans") {
+			$asterisk_command = $asterisk_command_pri_spans;
+		} elsif ($value eq "pri_span") {
+			$asterisk_command = $asterisk_command_pri_span;
+		} elsif ($value eq "registry") {
+			$asterisk_command = $asterisk_command_registry;
+
 		} elsif ($value eq "version") {
 			$asterisk_command = $asterisk_command_version;
 		} else {
@@ -373,6 +391,58 @@ if ($asterisk_command_tag eq "channels") {
 			last;
 		}
 	}
+	
+	# --- DAHDI ---
+	# Output example: (./nagisk.pl -c dahdi -s 3)
+	# B4XXP (PCI) Card 0 Span 1                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1) 
+	# B4XXP (PCI) Card 0 Span 2                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)  
+	# B4XXP (PCI) Card 0 Span 3                OK      0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+	# B4XXP (PCI) Card 0 Span 4                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+	
+} elsif ($asterisk_command_tag eq "dahdi") {
+
+	foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
+		if (/Card/) {
+			$return = $STA_OK;
+			$output .= "$_\n";
+		}
+		if (/No\ such\ command/) {
+			$return = $STA_CRITICAL;
+			$output = "Error getting Dahdi status (dahdi show status), is a dahdi card connected?\n";
+			last;
+		}
+	}
+	
+	# --- DAHDI SPAN ---
+	# Output example: (./nagisk.pl -c dahdi -s 3) 
+	# B4XXP (PCI) Card 0 Span 3                OK      0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+	
+} elsif ($asterisk_command_tag eq "dahdi_span") {
+
+	foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\" | grep \"Span $asterisk_span_number\"`) {  
+
+		if (/OK/) {
+			$return = $STA_OK;
+			$output = "$_\n";
+			last;
+		}
+		if (/RED/) {
+			$return = $STA_CRITICAL;
+			$output = "$_\n";
+			last;
+		}
+		if (/No\ such\ command/) {
+			$return = $STA_CRITICAL;
+			$output = "Error getting Dahdi status (dahdi show status), is a dahdi card connected?\n";
+			last;
+		}
+		
+		$return = $STA_CRITICAL;
+		$output = "Dahdi Span not found! (try \"dahdi show status\" in asterisk CLI.\n";
+		last;
+	}
+	
+	
 
 	# --- SPAN ---
 	# Output example:
@@ -405,6 +475,52 @@ if ($asterisk_command_tag eq "channels") {
 		$return = 1;
 		$output = "Span $asterisk_span_number did not exist\n";
 	}
+	
+	# --- PRI SPANS ---
+	# Output example: (./nagisk.pl -c pri_spans)
+	# PRI span 1/0: Provisioned, In Alarm, Down, Active  
+	# PRI span 2/0: Provisioned, In Alarm, Down, Active  
+	# PRI span 3/0: Provisioned, Up, Active  
+	# PRI span 4/0: Provisioned, In Alarm, Down, Active  
+	
+} elsif ($asterisk_command_tag eq "pri_spans") {
+	foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
+		if (/PRI/) {
+			$return = $STA_OK;
+			$output .= "$_\n";	
+		}
+		if (/No\ such\ command/) {
+			$return = $STA_CRITICAL;
+			$output = "LibPRI not found!\n";
+			last;
+		}
+	}
+	
+	# --- PRI SPAN ---
+	# Output example: (./nagisk.pl -c pri_span -s 3)
+	# Status: Provisioned, Up, Active 
+	#
+} elsif ($asterisk_command_tag eq "pri_span") {
+	foreach (`$asterisk_bin $asterisk_option \"$asterisk_command $asterisk_span_number\"`) {
+		
+		#$output .= "$_\n";
+		
+		if (/Up/) {
+			$return = $STA_OK;
+			$output = "$_\n";
+			last;
+		}
+		if (/Down/) {
+			$return = $STA_CRITICAL;
+			$output = "$_\n";
+			last;
+		}
+		if (/No\ such\ command/) {
+			$return = $STA_CRITICAL;
+			$output = "LibPRI not found!\n";
+			last;
+		}
+	}
 
 	# --- REGISTRY ---
 	# output example: 
@@ -424,7 +540,7 @@ if ($asterisk_command_tag eq "channels") {
 		}
 	}	
 	# --- VERSION ---
-	# Output example: "Asterisk  1.8.4.2"
+	# Output example: "Asterisk  1.8.4
 	#
 } elsif ($asterisk_command_tag eq "version") {
 
@@ -445,4 +561,3 @@ print $output;
 
 # --- Return appropriate Nagios code
 exit($return);
-
