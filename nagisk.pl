@@ -8,6 +8,7 @@
 # Frederic (03/2011)
 # ManuxFR (11/2011)
 # manuel@linux-home.at (8/2012)[dahdi,pri checks added]
+# Xavier Lemaire <xavier@amassi-network.com> (19/04/2013)
 #------------------------------------------------------------------------------
 use Getopt::Std;
 use strict;
@@ -43,7 +44,7 @@ my $asterisk_command_registry	= "sip show registry";
 #------------------------------------------------------------------------------
 
 # version
-my $version = "1.2.3";
+my $version = "1.2.4";
 
 use vars qw( %opts);
 
@@ -527,21 +528,25 @@ if ($asterisk_command_tag eq "channels") {
 	#	Host                                    dnsmgr Username       Refresh State      
 	#	Trunk_SIP_Peer:5060                      N      username       105 Registered     
 	#	1 SIP registrations.
-}	elsif ($asterisk_command_tag eq "registry") {
+    
+elsif ($asterisk_command_tag eq "registry") {
+    
+    foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
 
-	$return = $STA_CRITICAL;
-	$output = "Trunk NOT OK";
-
-	foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
-		if (/Registered/) {
-			$return = $STA_OK;
-			$output = "Trunk OK\n";
-			last;
-		}
-	}	
-	# --- VERSION ---
-	# Output example: "Asterisk  1.8.4
-	#
+        if (/Username/) {
+            next;
+        }
+        if (/registrations./) {
+            next;
+        }
+        if (!/105 Registered/) {
+            $return = $STA_CRITICAL;
+            $output = "Trunk NOT OK";
+            next;
+        }
+        $return = $STA_OK;
+        $output = "Trunk OK\n";
+    }    
 } elsif ($asterisk_command_tag eq "version") {
 
 	$return = $STA_CRITICAL;
