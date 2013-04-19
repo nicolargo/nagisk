@@ -8,6 +8,8 @@ http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk
 
 Version tracking
 ----------------
+v1.2.5: 04/2013 by Xavier Lemaire <xavier@amassi-network.com> :
+        Path for the registry command
 v1.2.4: 08/2012 by manuel@linux-home.at :
 		-c pri_spans: Display all dahdi spans
 		

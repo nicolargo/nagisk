@@ -44,7 +44,7 @@ my $asterisk_command_registry	= "sip show registry";
 #------------------------------------------------------------------------------
 
 # version
-my $version = "1.2.4";
+my $version = "1.2.5";
 
 use vars qw( %opts);
 
