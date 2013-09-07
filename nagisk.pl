@@ -44,7 +44,7 @@ my $asterisk_command_registry	= "sip show registry";
 #------------------------------------------------------------------------------
 
 # version
-my $version = "1.2.5";
+my $version = "1.2.6";
 
 use vars qw( %opts);
 
@@ -529,7 +529,7 @@ if ($asterisk_command_tag eq "channels") {
 	#	Trunk_SIP_Peer:5060                      N      username       105 Registered     
 	#	1 SIP registrations.
     
-elsif ($asterisk_command_tag eq "registry") {
+} elsif ($asterisk_command_tag eq "registry") {
     
     foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
 
