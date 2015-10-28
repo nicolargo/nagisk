@@ -10,6 +10,7 @@
 # manuel@linux-home.at (8/2012)[dahdi,pri checks added]
 # Xavier Lemaire <xavier@amassi-network.com> (19/04/2013)
 # Pierre-Alexandre Caquineau (12/05/2015) [Multi Trunk Sip Registrations]
+# Luiz Guimaraes (10/2015) [iax2 peers added]
 #------------------------------------------------------------------------------
 use Getopt::Std;
 use strict;
@@ -39,13 +40,14 @@ my $asterisk_buddy_name         = "asterisk";
 my $asterisk_warn_treshold      = "1000";
 my $asterisk_crit_treshold      = "2000";
 my $asterisk_command_registry   = "sip show registry";
+my $asterisk_command_iax2       = "iax2 show peers";
 
 #------------------------------------------------------------------------------
 # Options: Can NOT be changed
 #------------------------------------------------------------------------------
 
 # version
-my $version = "1.2.7";
+my $version = "1.2.8";
 
 use vars qw( %opts);
 
@@ -100,6 +102,7 @@ sub printsyntax() {
                   . "-c pri_spans: Display the status of the pri spans\n"
                   . "-c pri_span: Display the status of a specific pri span (set with -s option)\n"
                   . "-c registry: Display the Hosts and the Registry\n"
+                  . "-c iax2: Display the IAX2 peers status\n"
                   . "-s <span number>: Set the span number (default is 1)\n"
                   . "-p <peer name>\n"
                   . "-b <buddy name>\n"
@@ -239,6 +242,8 @@ for my $option (keys %opts) {
                         $asterisk_command = $asterisk_command_pri_span;
                 } elsif ($value eq "registry") {
                         $asterisk_command = $asterisk_command_registry;
+                } elsif ($value eq "iax2")  {
+                        $asterisk_command = $asterisk_command_iax2;
 
                 } elsif ($value eq "version") {
                         $asterisk_command = $asterisk_command_version;
@@ -558,6 +563,26 @@ if ($asterisk_command_tag eq "channels") {
         $output = "Trunk $asterisk_peer_name Not Found";
     }
 
+   # --- IAX2 peers ---
+   # Output example: "2 sip peers [Monitored: 1 online, 0 offline Unmonitored: 0 online, 1 offline]"
+   #
+} elsif ($asterisk_command_tag eq "iax2") {
+
+        $return = $STA_CRITICAL;
+        $output = "Error getting peers";
+
+        foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
+
+                if (/iax2\ peers/) {
+                        $output = $_;
+                }
+        }
+
+        # Raise alert based on number of Monitored Online peers
+        $return = &setAlert($1, $asterisk_warn_treshold, $asterisk_crit_treshold)
+          if ($output =~ /([0-9]+)\ online/);
+    
+    
 } elsif ($asterisk_command_tag eq "version") {
 
         $return = $STA_CRITICAL;

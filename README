@@ -8,9 +8,11 @@ http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk
 
 Version tracking
 ----------------
-v1.2.7: 18/05/2015 by CAQUINEAU, Pierre-Alexandre <pacaquineau@free.fr>:
+v1.2.8: 10/2015 by Luiz Guimaraes
+        - Add IAX2 peers
+v1.2.7: 05/2015 by CAQUINEAU, Pierre-Alexandre
         - Manage IPBX with several trunck
-v1.2.5: 04/2013 by Xavier Lemaire <xavier@amassi-network.com> :
+v1.2.5: 04/2013 by Xavier Lemaire
         Path for the registry command
 v1.2.4: 08/2012 by manuel@linux-home.at :
 		-c pri_spans: Display all dahdi spans
