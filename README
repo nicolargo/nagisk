@@ -8,6 +8,8 @@ http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk
 
 Version tracking
 ----------------
+v1.2.9: 01/2016 by Pierre-Alexandre CAQUINEAU
+        - Add actives connections number
 v1.2.8: 10/2015 by Luiz Guimaraes
         - Add IAX2 peers
 v1.2.7: 05/2015 by CAQUINEAU, Pierre-Alexandre
@@ -16,22 +18,22 @@ v1.2.5: 04/2013 by Xavier Lemaire
         Path for the registry command
 v1.2.4: 08/2012 by manuel@linux-home.at :
 		-c pri_spans: Display all dahdi spans
-		
+
 		-c dahdi_span: Display the status of the specific dahdi span
 		-s <span number>: Set the span number (default is 1)
 		"OK" will return OK
 		"RED" will return CRITICAL
-		
+
 		-c pri_spans: Display all pri spans
-		
+
 		-c pri_span: Display the status of the specific span
 		-s <span number>: Set the span number (default is 1)
 		"OK" will return OK all else CRITICAL
-		
+
 v1.2.3: 11/2011 by ManuxFR :
 		-c registry : Display the status of the SIP trunk - "sip show registry"
 		Compatible with Asterisk 1.8.4.2
-		
+
 v1.2.2: 03/2011 by Frederic:
 		-c konference: Displays the number of active conferences. Tresholds are against the number
 		of active conferences. This is for the Konference module, not for the Meetme module. Will show:
@@ -53,7 +55,7 @@ v1.2.1: 03/2011 by Frederic:
 
 v1.2: 03/2011 by Frederic:
         + Now compatible with Asterisk 1.6.2.X
-        -c peer -p <name>: Display the "status" of "sip show peer <peer>": 
+        -c peer -p <name>: Display the "status" of "sip show peer <peer>":
 		"myowntelco:  OK (65 ms)"
         + "-c channels" is now using "core show channels" with new output parsing:
 		"26 active channels 12 active calls 317 calls processed"
@@ -64,7 +66,7 @@ v1.1: Add the following options:
 		-c zaptel: Display the status of the zaptel card
 		-c span: Display the status of a specific span (set with -s option)
 		-s <span number>: Set the span number (default is 1)
-	
+
 v1.0: first public release
 
 License

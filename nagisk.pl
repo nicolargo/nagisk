@@ -10,7 +10,7 @@
 # manuel@linux-home.at (8/2012)[dahdi,pri checks added]
 # Xavier Lemaire <xavier@amassi-network.com> (19/04/2013)
 # Pierre-Alexandre Caquineau (12/05/2015) [Multi Trunk Sip Registrations]
-# Luiz Guimaraes (10/2015) [iax2 peers added]
+# Pierre-Alexandre Caquineau (25/01/2016) [Nb active calls]
 #------------------------------------------------------------------------------
 use Getopt::Std;
 use strict;
@@ -40,14 +40,14 @@ my $asterisk_buddy_name         = "asterisk";
 my $asterisk_warn_treshold      = "1000";
 my $asterisk_crit_treshold      = "2000";
 my $asterisk_command_registry   = "sip show registry";
-my $asterisk_command_iax2       = "iax2 show peers";
+my $asterisk_command_calls      = "core show calls";
 
 #------------------------------------------------------------------------------
 # Options: Can NOT be changed
 #------------------------------------------------------------------------------
 
 # version
-my $version = "1.2.8";
+my $version = "1.2.9";
 
 use vars qw( %opts);
 
@@ -94,6 +94,7 @@ sub printsyntax() {
                   . "-c peer: Display the status of a particular peer\n"
                   . "-c channels: Display the channels status\n"
                   . "-c konference: Display nb of active conferences\n"
+                  . "-c calls: Display nb of active calls\n"
                   . "-c jabber: Display a jabber buddy status\n"
                   . "-c zaptel: Display the status of the zaptel card\n"
                   . "-c span: Display the status of a specific span (set with -s option)\n"
@@ -102,7 +103,6 @@ sub printsyntax() {
                   . "-c pri_spans: Display the status of the pri spans\n"
                   . "-c pri_span: Display the status of a specific pri span (set with -s option)\n"
                   . "-c registry: Display the Hosts and the Registry\n"
-                  . "-c iax2: Display the IAX2 peers status\n"
                   . "-s <span number>: Set the span number (default is 1)\n"
                   . "-p <peer name>\n"
                   . "-b <buddy name>\n"
@@ -242,11 +242,10 @@ for my $option (keys %opts) {
                         $asterisk_command = $asterisk_command_pri_span;
                 } elsif ($value eq "registry") {
                         $asterisk_command = $asterisk_command_registry;
-                } elsif ($value eq "iax2")  {
-                        $asterisk_command = $asterisk_command_iax2;
-
                 } elsif ($value eq "version") {
                         $asterisk_command = $asterisk_command_version;
+                } elsif ($value eq "calls") {
+                        $asterisk_command = $asterisk_command_calls;
                 } else {
                         printsyntax();
                         exit($return);
@@ -307,9 +306,9 @@ if ($asterisk_command_tag eq "channels") {
         $return = &setAlert($1, $asterisk_warn_treshold, $asterisk_crit_treshold)
           if ($output =~ /^([0-9]+)\ active channels/);
 
-   # --- PEERS ---
-   # Output example: "2 sip peers [Monitored: 1 online, 0 offline Unmonitored: 0 online, 1 offline]"
-   #
+# --- PEERS ---
+# Output example: "2 sip peers [Monitored: 1 online, 0 offline Unmonitored: 0 online, 1 offline]"
+#
 } elsif ($asterisk_command_tag eq "peers") {
 
         $return = $STA_CRITICAL;
@@ -326,9 +325,9 @@ if ($asterisk_command_tag eq "channels") {
         $return = &setAlert($1, $asterisk_warn_treshold, $asterisk_crit_treshold)
           if ($output =~ /Monitored: ([0-9]+)\ online/);
 
-        # --- PEER ---
-        # Output example: "myowntelco: OK (15 ms)"
-        #
+# --- PEER ---
+# Output example: "myowntelco: OK (15 ms)"
+#
 } elsif ($asterisk_command_tag eq "peer") {
 
         $return = $STA_CRITICAL;
@@ -344,9 +343,9 @@ if ($asterisk_command_tag eq "channels") {
         $return = &setAlert($1, $asterisk_warn_treshold, $asterisk_crit_treshold)
           if ($output =~ /([0-9]+)\ ms/);
 
-        # --- JABBER ---
-        # Output example: "Buddy: freddy (Connected)"
-        #
+# --- JABBER ---
+# Output example: "Buddy: freddy (Connected)"
+#
 } elsif ($asterisk_command_tag eq "jabber") {
 
         $return = $STA_CRITICAL;
@@ -363,9 +362,9 @@ if ($asterisk_command_tag eq "channels") {
         $return = $STA_WARNING  if ($output =~ /Buddy:.*Connecting/);
         $return = $STA_OK       if ($output =~ /Buddy:.*Connected/);
 
-        # --- KONFERENCE ---
-        # Output example: "Active konferences: 5"
-        #
+# --- KONFERENCE ---
+# Output example: "Active konferences: 5"
+#
 } elsif ($asterisk_command_tag eq "konference") {
 
         $return = $STA_CRITICAL;
@@ -381,9 +380,9 @@ if ($asterisk_command_tag eq "channels") {
         $return = &setAlert($1, $asterisk_warn_treshold, $asterisk_crit_treshold)
           if ($output =~ /Active konferences: ([0-9]+)/);
 
-        # --- ZAPTEL ---
-        # Output example:
-        #
+# --- ZAPTEL ---
+# Output example:
+#
 } elsif ($asterisk_command_tag eq "zaptel") {
 
         foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
@@ -399,13 +398,13 @@ if ($asterisk_command_tag eq "channels") {
                 }
         }
 
-        # --- DAHDI ---
-        # Output example: (./nagisk.pl -c dahdi -s 3)
-        # B4XXP (PCI) Card 0 Span 1                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
-        # B4XXP (PCI) Card 0 Span 2                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
-        # B4XXP (PCI) Card 0 Span 3                OK      0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
-        # B4XXP (PCI) Card 0 Span 4                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
-
+# --- DAHDI ---
+# Output example: (./nagisk.pl -c dahdi -s 3)
+# B4XXP (PCI) Card 0 Span 1                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+# B4XXP (PCI) Card 0 Span 2                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+# B4XXP (PCI) Card 0 Span 3                OK      0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+# B4XXP (PCI) Card 0 Span 4                RED     0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+#
 } elsif ($asterisk_command_tag eq "dahdi") {
 
         foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
@@ -420,10 +419,10 @@ if ($asterisk_command_tag eq "channels") {
                 }
         }
 
-        # --- DAHDI SPAN ---
-        # Output example: (./nagisk.pl -c dahdi -s 3)
-        # B4XXP (PCI) Card 0 Span 3                OK      0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
-
+# --- DAHDI SPAN ---
+# Output example: (./nagisk.pl -c dahdi -s 3)
+# B4XXP (PCI) Card 0 Span 3                OK      0      0      0      CCS AMI  YEL      0 db (CSU)/0-133 feet (DSX-1)
+#
 } elsif ($asterisk_command_tag eq "dahdi_span") {
 
         foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\" | grep \"Span $asterisk_span_number\"`) {
@@ -451,9 +450,9 @@ if ($asterisk_command_tag eq "channels") {
 
 
 
-        # --- SPAN ---
-        # Output example:
-        #
+# --- SPAN ---
+# Output example:
+#
 } elsif ($asterisk_command_tag eq "span") {
         my $span = 0;
         foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
@@ -483,13 +482,13 @@ if ($asterisk_command_tag eq "channels") {
                 $output = "Span $asterisk_span_number did not exist\n";
         }
 
-        # --- PRI SPANS ---
-        # Output example: (./nagisk.pl -c pri_spans)
-        # PRI span 1/0: Provisioned, In Alarm, Down, Active
-        # PRI span 2/0: Provisioned, In Alarm, Down, Active
-        # PRI span 3/0: Provisioned, Up, Active
-        # PRI span 4/0: Provisioned, In Alarm, Down, Active
-
+# --- PRI SPANS ---
+# Output example: (./nagisk.pl -c pri_spans)
+# PRI span 1/0: Provisioned, In Alarm, Down, Active
+# PRI span 2/0: Provisioned, In Alarm, Down, Active
+# PRI span 3/0: Provisioned, Up, Active
+# PRI span 4/0: Provisioned, In Alarm, Down, Active
+#
 } elsif ($asterisk_command_tag eq "pri_spans") {
         foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
                 if (/PRI/) {
@@ -503,10 +502,10 @@ if ($asterisk_command_tag eq "channels") {
                 }
         }
 
-        # --- PRI SPAN ---
-        # Output example: (./nagisk.pl -c pri_span -s 3)
-        # Status: Provisioned, Up, Active
-        #
+# --- PRI SPAN ---
+# Output example: (./nagisk.pl -c pri_span -s 3)
+# Status: Provisioned, Up, Active
+#
 } elsif ($asterisk_command_tag eq "pri_span") {
         foreach (`$asterisk_bin $asterisk_option \"$asterisk_command $asterisk_span_number\"`) {
 
@@ -529,12 +528,12 @@ if ($asterisk_command_tag eq "channels") {
                 }
         }
 
-        # --- REGISTRY ---
-        # Output example: (./nagisk.pl -c registry -p username)
-        #       Host                                    dnsmgr Username       Refresh State
-        #       Trunk_SIP_Peer:5060                      N      username       105 Registered
-        #       1 SIP registrations.
-
+# --- REGISTRY ---
+# Output example: (./nagisk.pl -c registry -p username)
+#       Host                                    dnsmgr Username       Refresh State
+#       Trunk_SIP_Peer:5060                      N      username       105 Registered
+#       1 SIP registrations.
+#
 } elsif ($asterisk_command_tag eq "registry") {
     my $found=0;
     foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
@@ -563,26 +562,9 @@ if ($asterisk_command_tag eq "channels") {
         $output = "Trunk $asterisk_peer_name Not Found";
     }
 
-   # --- IAX2 peers ---
-   # Output example: "2 sip peers [Monitored: 1 online, 0 offline Unmonitored: 0 online, 1 offline]"
-   #
-} elsif ($asterisk_command_tag eq "iax2") {
-
-        $return = $STA_CRITICAL;
-        $output = "Error getting peers";
-
-        foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
-
-                if (/iax2\ peers/) {
-                        $output = $_;
-                }
-        }
-
-        # Raise alert based on number of Monitored Online peers
-        $return = &setAlert($1, $asterisk_warn_treshold, $asterisk_crit_treshold)
-          if ($output =~ /([0-9]+)\ online/);
-    
-    
+# --- VERSION ---
+# Output example:
+#
 } elsif ($asterisk_command_tag eq "version") {
 
         $return = $STA_CRITICAL;
@@ -592,6 +574,22 @@ if ($asterisk_command_tag eq "channels") {
                 if (/(Asterisk.*)\ built/) {
                         $return = $STA_OK;
                         $output = "$1";
+                }
+        }
+
+# --- CALLS ---
+# Output example: "Active calls: 5"
+#
+} elsif ($asterisk_command_tag eq "calls") {
+
+        $return = $STA_CRITICAL;
+        $output = "Error getting calls";
+
+        foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
+                if (/active call/) {
+                        $return = $STA_OK;
+                        my @nb_calls = split(' ', $_);
+                        $output = "Active calls : $nb_calls[0] | Nb_Calls=$nb_calls[0]";
                 }
         }
 }
