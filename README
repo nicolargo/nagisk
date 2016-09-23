@@ -8,6 +8,8 @@ http://blog.nicolargo.com/2008/10/superviser-asterisk-dans-nagios-grace-a-nagisk
 
 Version tracking
 ----------------
+v1.2.10: 09/2016 by Iain Farrington
+        -c failover: Shows status of failover devices
 v1.2.9: 01/2016 by Pierre-Alexandre CAQUINEAU
         - Add actives connections number
 v1.2.8: 10/2015 by Luiz Guimaraes
