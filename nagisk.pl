@@ -41,6 +41,7 @@ my $asterisk_warn_treshold      = "1000";
 my $asterisk_crit_treshold      = "2000";
 my $asterisk_command_registry   = "sip show registry";
 my $asterisk_command_calls      = "core show calls";
+my $asterisk_command_failover   = "failover show";
 
 #------------------------------------------------------------------------------
 # Options: Can NOT be changed
@@ -103,6 +104,7 @@ sub printsyntax() {
                   . "-c pri_spans: Display the status of the pri spans\n"
                   . "-c pri_span: Display the status of a specific pri span (set with -s option)\n"
                   . "-c registry: Display the Hosts and the Registry\n"
+                  . "-c failover: Display the failover device status\n"
                   . "-s <span number>: Set the span number (default is 1)\n"
                   . "-p <peer name>\n"
                   . "-b <buddy name>\n"
@@ -246,6 +248,8 @@ for my $option (keys %opts) {
                         $asterisk_command = $asterisk_command_version;
                 } elsif ($value eq "calls") {
                         $asterisk_command = $asterisk_command_calls;
+                } elsif ($value eq "failover") {
+                        $asterisk_command = $asterisk_command_failover;
                 } else {
                         printsyntax();
                         exit($return);
@@ -590,6 +594,24 @@ if ($asterisk_command_tag eq "channels") {
                         $return = $STA_OK;
                         my @nb_calls = split(' ', $_);
                         $output = "Active calls : $nb_calls[0] | Nb_Calls=$nb_calls[0]";
+                }
+        }
+# --- FAILOVER ---
+# Output example: (./nagisk.pl -c failover)
+# * DEVICE#1: openvox_failover_1 /dev/ttyUSB0 VERSION:1.5
+#   INTERNAL:4000 EVENT: AUTORUN:no STATE:RUNNING
+} elsif ($asterisk_command_tag eq "failover") {
+
+        foreach (`$asterisk_bin $asterisk_option \"$asterisk_command\"`) {
+                if (/STATE:RUNNING/) {
+                        $return = $STA_OK;
+                        $output = "$_\n";
+                } elsif (/STATE:STOPPED/) {
+                        $return = $STA_CRITICAL;
+                        $output = "Failover currently stopped\n";
+                } elsif (/No\ such\ command/) {
+                        $return = $STA_CRITICAL;
+                        $output = "Error checking failover status, is failover installed?\n";
                 }
         }
 }
